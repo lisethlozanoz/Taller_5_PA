@@ -1,4 +1,4 @@
-//Debo utilizar operador flecha ->Mirar mucho esto
+
 #include <iostream>
 #include <fstream>
 #include <string>
