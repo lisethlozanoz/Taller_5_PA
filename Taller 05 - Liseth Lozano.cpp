@@ -1,8 +1,18 @@
-
 #include <iostream>
 #include <fstream>
 #include <string>
+
+#include <string>
+#include <iomanip>
+#include <utility>
+#include <iostream>
+#include <stdexcept>
+
+#include <cstdio>
+#include <string>
+
 using namespace std;
+
 
 
 struct Profesor{
@@ -13,57 +23,43 @@ struct Profesor{
 	int sueldoSemanal;
 };
 
-struct Clases{
-	int *inicia;
-	int *termina;
-	int horasClase; 
-};
 
 int menu(); //Para mostrar y escanear las opciones del menu  
 
-int cantidadProfesores();//Para calcular cantidad de profesores que hay en el archivo
-
-int cantidadClases(Profesor *profesor,int cantidadProfesores);//Para calcular cantidad de clases que tiene cada profesor
-
-void lectura(Profesor *profesor, int cantidadProfesores);/*Para capturar e imprimir los registros 
+int lectura(Profesor profesores[50]);/*Para capturar e imprimir los registros 
 del archivo*/
 
-void generarArchivo(Profesor *profesor, int cantidadProfesores); //Para generar el archivo ordenado descendentemente e imprimirlo
+void sueldo(Profesor profesores[50], int num);
 
-void imprimirArchivoNuevo (int cantidadProfesores);/*Para imprimir el archivo de los sueldos superiores
-sueldos superiores*/
+void ordenado(Profesor profesores[50], int num); //Para generar el archivo ordenado descendentemente e imprimirlo
 
 int main(){
 	
-	int op, tamanoProfesor, tamanoClase;
+	int op, tamanoProfesor, tamanoClase, num;
+	Profesor profesores[50];
 	
+	do{
 	op=menu();
-	tamanoProfesor=cantidadProfesores();	
-	Profesor *profesor = new Profesor[tamanoProfesor];//Arreglo que va a guardar los datos de los profesores
-	tamanoClase=cantidadClases(profesor,tamanoProfesor);
-	Clases *clases= new Clases[tamanoClase];
 	
-	//do{
 		switch(op){
 		
 		case 1:
-			lectura(profesor, tamanoProfesor);
+			num = lectura(profesores);
 			break;
 			
 		case 2:
-			
+			sueldo(profesores, num);
 			break;
 			
 		case 3:
-			generarArchivo(profesor, tamanoProfesor);
-			imprimirArchivoNuevo(tamanoProfesor);
+			ordenado(profesores, num);
 			break;
 			
 		case 4:
 			break;
-	    }		
+	    }	
+			}while(op!=4);
 		
-	//}while(op!=4);
 }
 
 
@@ -83,177 +79,158 @@ int menu(){
 	return x;
 }
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-int cantidadProfesores(){
+int horas(string h1, string h2 ){
 	
-	ifstream entradaArchivo;
-    entradaArchivo.open("profesor.txt");
-    
-    int cantidadProfesores= 0;
-    string line;
-
-
-    if (!entradaArchivo.is_open()){
-        cout << "No se pudo abrir el archivo"<<endl;
-    }
-
-    else{
-        while (getline(entradaArchivo, line)){
-            cantidadProfesores++;
-        }
-    }
-    
-    return cantidadProfesores/4;
+	int hora1, hora2, horas1, horas2, minutos1, minutos2,difHoras, difMinutos, dif;
+	string hh1="", hh2="", mm1="", mm2="";
+	
+	if (h1 == "0")
+		return 0;
+		
+	if(h1 == "7")
+		h1 = "0700";
+		
+	if(h1.length() == 3)
+		h1 = "0" + h1;
+	
+	if(h2.length() == 3)
+		h2 = "0" + h2;
+	
+	hh1 += h1[0];
+	hh1 +=h1[1];
+	hh2 += h2[0];
+	hh2 +=h2[1];
+	
+	mm1 += h1[2];
+	mm1 +=h1[3];
+	mm2 += h2[2];
+	mm2 += h2[3];
+	
+	sscanf(hh1.c_str(), "%d", &hora1);
+	sscanf(hh2.c_str(), "%d", &hora2);
+	
+	sscanf(mm1.c_str(), "%d", &minutos1);
+	sscanf(mm2.c_str(), "%d", &minutos2);
+	
+	minutos1 = hora1 * 60 + minutos1;
+	minutos2 = hora2 * 60 + minutos2;
+	
+	dif = minutos2 - minutos1;
+	
+	dif /= 50;
+	
+	return dif;
+	
 }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-int cantidadClases(Profesor *profesor,int cantidadProfesores){
-	
-	ifstream entradaArchivo;
-    entradaArchivo.open("profesor.txt");
-    
-    int cantidadClases= 0;
-    string line;
-
-
-    if (!entradaArchivo.is_open()){
-        cout << "No se pudo abrir el archivo"<<endl;
-    }
-
-    else{
-        for(int i=0; i<cantidadProfesores;i++){
-        	
-			cantidadClases++;
-		}
-    }
-    
-	return cantidadClases;
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void lectura(Profesor *profesor, int cantidadProfesores){
-	
+int lectura(Profesor profesores[50]){
+	//Profesor profesor[100];
 	ifstream entradaArchivo;
-    entradaArchivo.open("profesor.txt");
-
+    entradaArchivo.open("profesores.txt");
+    int i = 0;
 
     if (!entradaArchivo.is_open()){
         cout << "No se pudo abrir el archivo"<<endl;
     }
 
-
     else{
+    	string buffer;
+    	int bufferInt;
     	
-    	for (int i = 0; i < cantidadProfesores; i++){
-            entradaArchivo >> (profesor+i)->codigo;
-            entradaArchivo >> (profesor+i)->nombre;
-            entradaArchivo >> (profesor+i)->valorHora;
-            
-            cout<<endl<<"*******************************************************************"<<endl;
-            cout<<(profesor+i)->codigo<<endl;
-            cout<<(profesor+i)->nombre<<endl;
-            cout<<(profesor+i)->valorHora<<endl;
+    	while(!entradaArchivo.eof()){
+    		
+    		int acc=0, dif;
+            string inicio, fin;
+    		
+            entradaArchivo >> profesores[i].codigo;
+            entradaArchivo >> profesores[i].nombre;
+            entradaArchivo >> buffer;
+        
+            while(buffer == "clase"){
+            	entradaArchivo >> inicio;
+            	entradaArchivo >> fin;
+            	dif = horas(inicio, fin);
+            	acc += dif;
+            	
+            	entradaArchivo >> buffer;
+			}
+			
+			profesores[i].horasDictadas=acc;
+			
+			entradaArchivo >> profesores[i].valorHora;
+			
+            i++;
+            acc=0;
         }
     }
     
     entradaArchivo.close();
+    return i-1;
 }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void calculoSueldo(Profesor *profesor, int cantidadProfesores){
+void sueldo(Profesor profesores[], int num){
 	
-	int totalSueldosProfesores=0; //Esta variable es para los sueldos de todos los profesores
+	ofstream Esc;
+	Esc.open("salida.txt", ios::app);
+	int acc=0;
 	
-	
-	for(int i=0; i<cantidadProfesores; i++){
-	
-		(profesor+i)->sueldoSemanal= (profesor+i)->horasDictadas * (profesor+i)->valorHora;
-		
-		cout<<endl<<"***************************************************************************"<<endl;
-		cout<<"Codigo:"<<endl;
-		cout<<(profesor+i)->codigo<<endl;
-		cout<<"Nombre:"<<endl;
-        cout<<"\t"<<(profesor+i)->nombre<<endl;
-        cout<<"Sueldo Semanal:"<<endl;
-        cout<<"\t"<<(profesor+i)->sueldoSemanal<<endl;
-		
-		totalSueldosProfesores+=profesor[i].sueldoSemanal;
-		cout<<"El total del sueldo de todos los profesores es "<<totalSueldosProfesores<<endl;
+	for(int i=0; i<num; i++){
+		profesores[i].sueldoSemanal = profesores[i].horasDictadas * profesores[i].valorHora;
+		Esc<<profesores[i].codigo<<" ";
+		Esc<<profesores[i].nombre<<" ";
+		Esc<<profesores[i].sueldoSemanal<<" "<<endl;
+		acc += profesores[i].sueldoSemanal;
 	}
+	Esc<<"Sueldo total: "<<acc<<endl;
+		
+	Esc.close();
 }
 
+/*void swap(int *xp, int *yp) 
+{ 
+    int temp = *xp; 
+    *xp = *yp; 
+    *yp = temp; 
+} */
+  
+// A function to implement bubble sort 
+void bubbleSort(Profesor profesores[50], int n) 
+{
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-void generarArchivo(Profesor *profesor, int cantidadProfesores){
-	
-	int contador=0;
-	
-	Profesor *listadoNuevo= new Profesor[contador];
-	
-	for(int i=0; i<cantidadProfesores;i++){
-		
-		if(((profesor+i)->sueldoSemanal)>700000){
-			*(listadoNuevo+contador)=*(profesor+i);
-			contador++;
+    int i, j; 
+    for (i = 0; i < n-1; i++)     
+    // Last i elements are already in place 
+    for (j = 0; j < n-i-1; j++){
+
+    	if (profesores[j].sueldoSemanal < profesores[j+1].sueldoSemanal) {
+    		Profesor aux = profesores[j];
+    		profesores[j] = profesores[j+1];
+    		profesores[j+1] = aux;
+    		
 		}
+            //swap(&arr[j], &arr[j+1]); 
+		}
+	} 
+        
+	
+
+void ordenado(Profesor profesores[50], int num){
+	
+	bubbleSort(profesores, num);
+	
+	ofstream Esc;
+	Esc.open("salidaOrdenada.txt", ios::app);
+	int acc=0;
+	
+	for(int i=0; i<num; i++){
+		profesores[i].sueldoSemanal = profesores[i].horasDictadas * profesores[i].valorHora;
+		Esc<<profesores[i].codigo<<" ";
+		Esc<<profesores[i].nombre<<" ";
+		Esc<<profesores[i].sueldoSemanal<<" "<<endl;
+		acc += profesores[i].sueldoSemanal;
 	}
-	
-	
-	int aux;
-	Profesor profesorAux;
-	
-	for (int i = 0; i < contador; i++){
-        for (int j = 0; j < contador; j++){
-            
-			if (((listadoNuevo+i)->sueldoSemanal) < ((listadoNuevo+j)->sueldoSemanal)){    
-                profesorAux = listadoNuevo[i];
-                *(listadoNuevo+i)=*(listadoNuevo+j);
-                *(listadoNuevo+j)= profesorAux;
-            }
-        }
-    }
-    
-    ofstream salidaArchivo;
-    salidaArchivo.open("sueldosSuperiores.txt");
-    
-    
-    for (int i = 0; i <contador; i++){
-        salidaArchivo << (listadoNuevo+i)->codigo<< endl;
-        salidaArchivo << (listadoNuevo+i)->nombre<< endl;
-        salidaArchivo << (listadoNuevo+i)->sueldoSemanal << endl;
-    }
-    
-    salidaArchivo.close();
+		
+	Esc.close();
 }
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-void imprimirArchivoNuevo(int cantidadProfesores){
-	
-	ifstream entradaArchivo;
-    entradaArchivo.open("sueldosSuperiores.txt");
-    
-    char *LineasDelArchivo = new char[cantidadProfesores];
-
-
-    if (!entradaArchivo.is_open()){
-        cout << "No se pudo abrir el archivo"<<endl;
-    }
-    
-    else{
-        while (!entradaArchivo.eof())
-        {
-            entradaArchivo.getline(LineasDelArchivo, cantidadProfesores*4);
-            cout << LineasDelArchivo << endl;
-        }
-    }
-
-    entradaArchivo.close();
-}
-
-
 
