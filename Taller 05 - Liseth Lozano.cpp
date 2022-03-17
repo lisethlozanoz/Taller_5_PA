@@ -187,31 +187,21 @@ void sueldo(Profesor profesores[], int num){
 	Esc.close();
 }
 
-/*void swap(int *xp, int *yp) 
-{ 
-    int temp = *xp; 
-    *xp = *yp; 
-    *yp = temp; 
-} */
-  
-// A function to implement bubble sort 
 void bubbleSort(Profesor profesores[50], int n) 
 {
 
     int i, j; 
     for (i = 0; i < n-1; i++)     
-    // Last i elements are already in place 
+
     for (j = 0; j < n-i-1; j++){
 
     	if (profesores[j].sueldoSemanal < profesores[j+1].sueldoSemanal) {
     		Profesor aux = profesores[j];
     		profesores[j] = profesores[j+1];
     		profesores[j+1] = aux;
-    		
-		}
-            //swap(&arr[j], &arr[j+1]); 
-		}
-	} 
+	}
+   }
+} 
         
 	
 
